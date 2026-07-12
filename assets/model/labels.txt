@@ -1,0 +1,6 @@
+0 Battery
+1 LightBulb
+2 Chemical
+3 Aerosol
+4 Medicine
+5 Electronic
