@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'; // ปรับตำแหน่งการอิมพอร์ตให้เรียบร้อย
+import { useEffect, useState } from 'react'; // ปรับแก้ไขการอิมพอร์ตให้ถูกต้อง
 import {
   ActivityIndicator,
   Image,
@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 
-// URL ดึงข้อมูลจากไฟล์ JSON บน GitHub ของคุณ
+// กำหนด URL ของไฟล์ JSON บน GitHub ของคุณ (แก้ไขเป็นลิงก์ Raw จริงเรียบร้อยแล้ว)
 const GITHUB_DATA_URL = 'https://raw.githubusercontent.com/Aedawat/MyProfileAppAedawat1/refs/heads/main/product.json'; 
 
 export default function ProductsScreen() {
@@ -29,7 +29,7 @@ export default function ProductsScreen() {
       const response = await fetch(GITHUB_DATA_URL);
       const data = await response.json();
       
-      // ป้องกันกรณีที่ข้อมูลหลังดึงมาไม่ใช่ Array เพื่อไม่ให้แอปแครช
+      // ตรวจสอบโครงสร้างข้อมูลเพื่อป้องกันกรณีที่ไม่ใช่ Array แอร์พอร์ตจะไม่แครช
       setProducts(Array.isArray(data) ? data : data.products || []);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -40,6 +40,7 @@ export default function ProductsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* ส่วนแถบสถานะด้านบนสุดปรับเป็นสีน้ำเงินตัดกับตัวแอป */}
       <StatusBar barStyle="light-content" backgroundColor="#1e3a8a" />
 
       {/* --- ส่วนหัวแอป (Product Header) --- */}
@@ -76,11 +77,12 @@ export default function ProductsScreen() {
       <ScrollView 
         style={styles.productsList} 
         contentContainerStyle={[
-          styles.scrollContainer,
-          (isLoading || products.length === 0) && styles.emptyScrollContainer
+          styles.scrollContent,
+          (isLoading || products.length === 0) ? styles.emptyScrollContainer : null // แก้ไขบั๊กส่วนนี้ให้อยู่ในรูปแบบ Array Style ที่ปลอดภัยต่อระบบเว็บ
         ]}
         showsVerticalScrollIndicator={false}
       >
+        {/* แสดงตัวหมุนรอโหลด ถ้ายังดึงข้อมูลจาก GitHub ไม่เสร็จ */}
         {isLoading ? (
           <ActivityIndicator size="large" color="#1e3a8a" style={{ marginTop: 40 }} />
         ) : products.length > 0 ? (
@@ -246,7 +248,7 @@ const styles = StyleSheet.create({
   productsList: {
     flex: 1,
   },
-  scrollContainer: {
+  scrollContent: {
     padding: 20,
   },
   emptyScrollContainer: {
@@ -279,7 +281,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 15,
     marginBottom: 15,
-    // แก้ไขระบบ Shadow ให้รองรับเว็บ (ใช้ค่าตัวเลขแทนสตริง)
     shadowColor: '#1e3a8a',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
