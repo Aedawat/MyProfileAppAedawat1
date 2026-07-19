@@ -1,29 +1,29 @@
 [
   {
     "id": "1",
-    "name": "Nike Air Max 270",
+    "name": "Adidas Predator",
     "stock": 15,
     "category": "Shoes",
     "location": "Warehouse A",
     "status": "Active",
-    "imageUrl": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500"
+    "imageUrl": "https://assets.adidas.com/images/w_500,f_auto,q_auto/b4bb4a5ee9d04e6f89ad433fa243a37a_9366/PREDATOR_ELITE_Firm_Ground_JS0380_HM1.jpg"
   },
   {
     "id": "2",
-    "name": "Adidas Ultraboost",
+    "name": "Nike mercurial",
     "stock": 8,
     "category": "Shoes",
     "location": "Warehouse B",
     "status": "Active",
-    "imageUrl": "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=500"
+    "imageUrl": "https://static.nike.com/a/images/t_web_pdp_936_v2/f_auto/c04652ae-cd4b-4b62-b104-8943565ee9b8/ZM+VAPOR+16+ACADEMY+FG+NBY.png"
   },
   {
     "id": "3",
-    "name": "Puma Classic Sneaker",
+    "name": "Mizuno morelia neo 3",
     "stock": 0,
     "category": "Shoes",
     "location": "Showroom",
     "status": "Out of Stock",
-    "imageUrl": "https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=500"
+    "imageUrl": "https://tha.mizuno.com/cdn/shop/files/SH_P1GA238404_00_bc578699-8651-405a-a1b8-70812026b496.png?v=1728386745"
   }
 ]
