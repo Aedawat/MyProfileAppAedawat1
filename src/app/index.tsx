@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'; // 1. เพิ่ม useState และ useEffect
+import { useEffect, useState } from 'react'; // ปรับตำแหน่งการอิมพอร์ตให้เรียบร้อย
 import {
-  ActivityIndicator, // 2. เพิ่มตัวหมุนโหลดข้อมูล
+  ActivityIndicator,
   Image,
   SafeAreaView,
   ScrollView,
@@ -12,16 +12,13 @@ import {
   View,
 } from 'react-native';
 
-// กำหนด URL ของไฟล์ JSON บน GitHub ของคุณตรงนี้
-// *ข้อควรระวัง: ต้องใช้ลิงก์ที่เป็น "raw" (เช่น https://raw.githubusercontent.com/...) ถึงจะ fetch ข้อมูลได้ถูกต้อง
+// URL ดึงข้อมูลจากไฟล์ JSON บน GitHub ของคุณ
 const GITHUB_DATA_URL = 'https://raw.githubusercontent.com/Aedawat/MyProfileAppAedawat1/refs/heads/main/product.json'; 
 
 export default function ProductsScreen() {
-  // 3. สร้าง State สำหรับเก็บข้อมูลสินค้าและสถานะการโหลด
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 4. ใช้ useEffect ดึงข้อมูลทันทีเมื่อเปิดหน้าจอนี้ขึ้นมา
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -32,7 +29,7 @@ export default function ProductsScreen() {
       const response = await fetch(GITHUB_DATA_URL);
       const data = await response.json();
       
-      // ตรวจสอบโครงสร้างข้อมูล และอัปเดต state
+      // ป้องกันกรณีที่ข้อมูลหลังดึงมาไม่ใช่ Array เพื่อไม่ให้แอปแครช
       setProducts(Array.isArray(data) ? data : data.products || []);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -43,7 +40,6 @@ export default function ProductsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* ส่วนแถบสถานะด้านบนสุดปรับเป็นสีน้ำเงินตัดกับตัวแอป */}
       <StatusBar barStyle="light-content" backgroundColor="#1e3a8a" />
 
       {/* --- ส่วนหัวแอป (Product Header) --- */}
@@ -79,20 +75,22 @@ export default function ProductsScreen() {
       {/* --- ส่วนแสดงรายการสินค้า (Products List) --- */}
       <ScrollView 
         style={styles.productsList} 
-        contentContainerStyle={(isLoading || products.length === 0) && styles.emptyScrollContainer}
+        contentContainerStyle={[
+          styles.scrollContainer,
+          (isLoading || products.length === 0) && styles.emptyScrollContainer
+        ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* 5. แสดงตัวหมุนรอโหลด ถ้ายังดึงข้อมูลจาก GitHub ไม่เสร็จ */}
         {isLoading ? (
-          <ActivityIndicator size="large" color="#1e3a8a" />
+          <ActivityIndicator size="large" color="#1e3a8a" style={{ marginTop: 40 }} />
         ) : products.length > 0 ? (
-          products.map((product) => (
-            <View key={product.id || product._id} style={styles.productCard}>
+          products.map((product, index) => (
+            <View key={product.id || product._id || index} style={styles.productCard}>
               <View style={styles.productInfo}>
                 {/* รูปภาพสินค้า */}
                 <View style={styles.imageWrapper}>
                   <Image
-                    source={{ uri: product.imageUrl || product.image }}
+                    source={{ uri: product.imageUrl || product.image || 'https://via.placeholder.com/150' }}
                     style={styles.productImage}
                     resizeMode="cover"
                   />
@@ -100,8 +98,8 @@ export default function ProductsScreen() {
                 
                 {/* รายละเอียดจำนวน/คลังสินค้า */}
                 <View style={styles.productDetails}>
-                  <Text style={styles.stockText}>Stock: {product.stock} in stock</Text>
-                  <Text style={styles.categoryText}>Category: {product.category}</Text>
+                  <Text style={styles.stockText}>Stock: {product.stock ?? 0} in stock</Text>
+                  <Text style={styles.categoryText}>Category: {product.category || 'General'}</Text>
                   <Text style={styles.locationText}>Location: {product.location || 'N/A'}</Text>
                 </View>
                 
@@ -117,7 +115,7 @@ export default function ProductsScreen() {
               </View>
               
               {/* ชื่อสินค้าด้านล่างการ์ด */}
-              <Text style={styles.productName}>{product.name}</Text>
+              <Text style={styles.productName}>{product.name || 'Unnamed Product'}</Text>
             </View>
           ))
         ) : (
@@ -247,6 +245,8 @@ const styles = StyleSheet.create({
   },
   productsList: {
     flex: 1,
+  },
+  scrollContainer: {
     padding: 20,
   },
   emptyScrollContainer: {
@@ -279,6 +279,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 15,
     marginBottom: 15,
+    // แก้ไขระบบ Shadow ให้รองรับเว็บ (ใช้ค่าตัวเลขแทนสตริง)
     shadowColor: '#1e3a8a',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
