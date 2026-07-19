@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react'; // 1. เพิ่ม useState และ useEffect
 import {
+  ActivityIndicator, // 2. เพิ่มตัวหมุนโหลดข้อมูล
   Image,
   SafeAreaView,
   ScrollView,
@@ -10,10 +12,35 @@ import {
   View,
 } from 'react-native';
 
-// 1. นำข้อมูลสินค้าออกทั้งหมดเรียบร้อยแล้ว (เหลือเป็นอาเรย์ว่างสำหรับรอเชื่อมต่อ API หรือดึงข้อมูลจาก Database)
-const products = [];
+// กำหนด URL ของไฟล์ JSON บน GitHub ของคุณตรงนี้
+// *ข้อควรระวัง: ต้องใช้ลิงก์ที่เป็น "raw" (เช่น https://raw.githubusercontent.com/...) ถึงจะ fetch ข้อมูลได้ถูกต้อง
+const GITHUB_DATA_URL = 'https://raw.githubusercontent.com/Aedawat/MyProfileAppAedawat1/refs/heads/main/product.json'; 
 
 export default function ProductsScreen() {
+  // 3. สร้าง State สำหรับเก็บข้อมูลสินค้าและสถานะการโหลด
+  const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 4. ใช้ useEffect ดึงข้อมูลทันทีเมื่อเปิดหน้าจอนี้ขึ้นมา
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(GITHUB_DATA_URL);
+      const data = await response.json();
+      
+      // ตรวจสอบโครงสร้างข้อมูล และอัปเดต state
+      setProducts(Array.isArray(data) ? data : data.products || []);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* ส่วนแถบสถานะด้านบนสุดปรับเป็นสีน้ำเงินตัดกับตัวแอป */}
@@ -52,17 +79,20 @@ export default function ProductsScreen() {
       {/* --- ส่วนแสดงรายการสินค้า (Products List) --- */}
       <ScrollView 
         style={styles.productsList} 
-        contentContainerStyle={products.length === 0 && styles.emptyScrollContainer}
+        contentContainerStyle={(isLoading || products.length === 0) && styles.emptyScrollContainer}
         showsVerticalScrollIndicator={false}
       >
-        {products.length > 0 ? (
+        {/* 5. แสดงตัวหมุนรอโหลด ถ้ายังดึงข้อมูลจาก GitHub ไม่เสร็จ */}
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#1e3a8a" />
+        ) : products.length > 0 ? (
           products.map((product) => (
-            <View key={product.id} style={styles.productCard}>
+            <View key={product.id || product._id} style={styles.productCard}>
               <View style={styles.productInfo}>
                 {/* รูปภาพสินค้า */}
                 <View style={styles.imageWrapper}>
                   <Image
-                    source={{ uri: product.imageUrl }}
+                    source={{ uri: product.imageUrl || product.image }}
                     style={styles.productImage}
                     resizeMode="cover"
                   />
@@ -72,13 +102,13 @@ export default function ProductsScreen() {
                 <View style={styles.productDetails}>
                   <Text style={styles.stockText}>Stock: {product.stock} in stock</Text>
                   <Text style={styles.categoryText}>Category: {product.category}</Text>
-                  <Text style={styles.locationText}>Location: {product.location}</Text>
+                  <Text style={styles.locationText}>Location: {product.location || 'N/A'}</Text>
                 </View>
                 
                 {/* ปุ่มสถานะด้านขวา */}
                 <View style={styles.productActions}>
                   <TouchableOpacity style={styles.statusButton}>
-                    <Text style={styles.statusText}>{product.status}</Text>
+                    <Text style={styles.statusText}>{product.status || 'Active'}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.moreButton}>
                     <Text style={styles.moreIcon}>›</Text>
@@ -91,7 +121,7 @@ export default function ProductsScreen() {
             </View>
           ))
         ) : (
-          /* ส่วนแสดงผลกรณีไม่มีสินค้าในคลัง (Empty State) เพื่อไม่ให้หน้าจอโล่งเกินไป */
+          /* ส่วนแสดงผลกรณีไม่มีสินค้าในคลัง (Empty State) */
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyIcon}>📦</Text>
             <Text style={styles.emptyText}>No products found</Text>
@@ -123,11 +153,10 @@ export default function ProductsScreen() {
   );
 }
 
-// 2. ปรับโครงสร้างสีเป็นแบบ ฟ้าอ่อน (Light Blue) และ น้ำเงิน (Navy Blue)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#eff6ff', // สีพื้นหลังแอป ฟ้าอ่อนมากๆ (เด้งรูปภาพและข้อความให้เด่น)
+    backgroundColor: '#eff6ff', 
   },
   header: {
     flexDirection: 'row',
@@ -135,7 +164,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: '#1e3a8a', // แถบบนสุดสีน้ำเงินเข้มขรึมสุดพรีเมียม
+    backgroundColor: '#1e3a8a', 
     borderBottomWidth: 1,
     borderBottomColor: '#1d4ed8',
   },
@@ -147,17 +176,17 @@ const styles = StyleSheet.create({
   },
   menuIcon: {
     fontSize: 18,
-    color: '#93c5fd', // ไอคอนสีฟ้าอ่อน
+    color: '#93c5fd', 
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#ffffff', // ตัวหนังสือชื่อแอปสีขาวตัดชัดเจน
+    color: '#ffffff', 
   },
   profileButton: {
     width: 30,
     height: 30,
-    backgroundColor: '#60a5fa', // ปุ่มโปรไฟล์สีฟ้าสว่าง
+    backgroundColor: '#60a5fa', 
     borderRadius: 15,
     justifyContent: 'center',
     alignItems: 'center',
@@ -171,7 +200,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: '#1e3a8a', // ใช้สีน้ำเงินต่อเนื่องมาจาก Header
+    backgroundColor: '#1e3a8a', 
     borderBottomWidth: 1,
     borderBottomColor: '#1d4ed8',
   },
@@ -179,7 +208,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#172554', // แถบค้นหาดีไซน์เข้มขึ้นเล็กน้อย
+    backgroundColor: '#172554', 
     borderRadius: 8,
     paddingHorizontal: 10,
     marginRight: 10,
@@ -196,7 +225,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   addButton: {
-    backgroundColor: '#60a5fa', // ปุ่ม + Add Product ใช้สีฟ้าสดใสตัดสะดุดตา
+    backgroundColor: '#60a5fa', 
     borderRadius: 8,
     paddingHorizontal: 15,
     paddingVertical: 10,
@@ -228,7 +257,7 @@ const styles = StyleSheet.create({
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingBottom: 80, // ดันขึ้นเล็กน้อยเพื่อความสมดุลสายตา
+    paddingBottom: 80, 
   },
   emptyIcon: {
     fontSize: 64,
@@ -246,7 +275,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   productCard: {
-    backgroundColor: '#ffffff', // การ์ดสินค้าสีขาวสะอาดตาตัดกับพื้นหลังฟ้าอ่อน
+    backgroundColor: '#ffffff', 
     borderRadius: 12,
     padding: 15,
     marginBottom: 15,
@@ -296,14 +325,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statusButton: {
-    backgroundColor: '#dbeafe', // ปุ่มสถานะสีฟ้าอ่อนสดใสแบบพาสเทล
+    backgroundColor: '#dbeafe', 
     borderRadius: 15,
     paddingHorizontal: 15,
     paddingVertical: 5,
     marginRight: 10,
   },
   statusText: {
-    color: '#1e40af', // อักษรสถานะสีน้ำเงินเข้ม
+    color: '#1e40af', 
     fontSize: 12,
     fontWeight: '700',
   },
@@ -320,11 +349,11 @@ const styles = StyleSheet.create({
   productName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1e3a8a', // ชื่อสินค้าเป็นสีน้ำเงินเข้มสว่าง
+    color: '#1e3a8a', 
   },
   bottomNav: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff', // แถบล่างพื้นสีขาวเรียบร้อย
+    backgroundColor: '#ffffff', 
     paddingVertical: 10,
     borderTopWidth: 1,
     borderTopColor: '#e2e8f0',
