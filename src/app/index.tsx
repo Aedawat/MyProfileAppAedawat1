@@ -10,36 +10,8 @@ import {
   View,
 } from 'react-native';
 
-// 1. ข้อมูลสินค้าจำลองพร้อมรูปภาพรองเท้าสตั๊ด (Football Boots)
-const products = [
-  {
-    id: '1',
-    name: 'Nike Mercurial Vapor 15 Elite FG',
-    stock: 12,
-    category: 'Football Boots',
-    location: 'Warehouse A',
-    status: 'Active',
-    imageUrl: 'https://classicbootseu.com/cdn/shop/files/nike-zoom-mercurial-vapor-15-xv-elite-fg-dj4978-780-nike-vapor-nike-291128.jpg?v=1728400111&width=2268',
-  },
-  {
-    id: '2',
-    name: 'Adidas Predator Elite FG',
-    stock: 8,
-    category: 'Football Boots',
-    location: 'Warehouse B',
-    status: 'Active',
-    imageUrl: 'https://www.arifootballstore.com/media/mf_webp/jpg/media/catalog/product/cache/6e478a31517304dced53ac4d3f3d5560/a/d/adidas-predator-elite-ft-fg---core-black-ftwr-white---_js0375__02.webp',
-  },
-  {
-    id: '3',
-    name: 'Puma Future Ultimate FG/AG',
-    stock: 5,
-    category: 'Football Boots',
-    location: 'Showroom 1',
-    status: 'Active',
-    imageUrl: 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/107355/03/sv01/fnd/THA/fmt/png/%E0%B8%A3%E0%B8%AD%E0%B8%87%E0%B9%80%E0%B8%97%E0%B9%89%E0%B8%B2%E0%B8%9F%E0%B8%B8%E0%B8%95%E0%B8%9A%E0%B8%AD%E0%B8%A5-FUTURE-ULTIMATE-FG/AG',
-  },
-];
+// 1. นำข้อมูลสินค้าออกทั้งหมดเรียบร้อยแล้ว (เหลือเป็นอาเรย์ว่างสำหรับรอเชื่อมต่อ API หรือดึงข้อมูลจาก Database)
+const products = [];
 
 export default function ProductsScreen() {
   return (
@@ -78,41 +50,54 @@ export default function ProductsScreen() {
       </View>
 
       {/* --- ส่วนแสดงรายการสินค้า (Products List) --- */}
-      <ScrollView style={styles.productsList} showsVerticalScrollIndicator={false}>
-        {products.map((product) => (
-          <View key={product.id} style={styles.productCard}>
-            <View style={styles.productInfo}>
-              {/* รูปภาพสินค้า */}
-              <View style={styles.imageWrapper}>
-                <Image
-                  source={{ uri: product.imageUrl }}
-                  style={styles.productImage}
-                  resizeMode="cover"
-                />
+      <ScrollView 
+        style={styles.productsList} 
+        contentContainerStyle={products.length === 0 && styles.emptyScrollContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        {products.length > 0 ? (
+          products.map((product) => (
+            <View key={product.id} style={styles.productCard}>
+              <View style={styles.productInfo}>
+                {/* รูปภาพสินค้า */}
+                <View style={styles.imageWrapper}>
+                  <Image
+                    source={{ uri: product.imageUrl }}
+                    style={styles.productImage}
+                    resizeMode="cover"
+                  />
+                </View>
+                
+                {/* รายละเอียดจำนวน/คลังสินค้า */}
+                <View style={styles.productDetails}>
+                  <Text style={styles.stockText}>Stock: {product.stock} in stock</Text>
+                  <Text style={styles.categoryText}>Category: {product.category}</Text>
+                  <Text style={styles.locationText}>Location: {product.location}</Text>
+                </View>
+                
+                {/* ปุ่มสถานะด้านขวา */}
+                <View style={styles.productActions}>
+                  <TouchableOpacity style={styles.statusButton}>
+                    <Text style={styles.statusText}>{product.status}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.moreButton}>
+                    <Text style={styles.moreIcon}>›</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
               
-              {/* รายละเอียดจำนวน/คลังสินค้า */}
-              <View style={styles.productDetails}>
-                <Text style={styles.stockText}>Stock: {product.stock} in stock</Text>
-                <Text style={styles.categoryText}>Category: {product.category}</Text>
-                <Text style={styles.locationText}>Location: {product.location}</Text>
-              </View>
-              
-              {/* ปุ่มสถานะด้านขวา */}
-              <View style={styles.productActions}>
-                <TouchableOpacity style={styles.statusButton}>
-                  <Text style={styles.statusText}>{product.status}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.moreButton}>
-                  <Text style={styles.moreIcon}>›</Text>
-                </TouchableOpacity>
-              </View>
+              {/* ชื่อสินค้าด้านล่างการ์ด */}
+              <Text style={styles.productName}>{product.name}</Text>
             </View>
-            
-            {/* ชื่อสินค้าด้านล่างการ์ด */}
-            <Text style={styles.productName}>{product.name}</Text>
+          ))
+        ) : (
+          /* ส่วนแสดงผลกรณีไม่มีสินค้าในคลัง (Empty State) เพื่อไม่ให้หน้าจอโล่งเกินไป */
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyIcon}>📦</Text>
+            <Text style={styles.emptyText}>No products found</Text>
+            <Text style={styles.emptySubText}>There are no items available right now.</Text>
           </View>
-        ))}
+        )}
       </ScrollView>
 
       {/* --- แถบเมนูด้านล่าง (Bottom Navigation) --- */}
@@ -126,9 +111,7 @@ export default function ProductsScreen() {
           <Text style={styles.navText}>Add</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem}>
-          {/* อัปเดตไอคอนจากเก้าอี้เป็นรองเท้า 👟 เพื่อให้เข้ากับประเภทสินค้าใหม่ */}
           <Text style={styles.navIcon}>👟</Text>
-          {/* แถบที่เลือกเปลี่ยนเป็นสีน้ำเงินเข้มเพื่อความชัดเจน */}
           <Text style={[styles.navText, { color: '#1e3a8a', fontWeight: 'bold' }]}>Products</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem}>
@@ -236,6 +219,31 @@ const styles = StyleSheet.create({
   productsList: {
     flex: 1,
     padding: 20,
+  },
+  emptyScrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingBottom: 80, // ดันขึ้นเล็กน้อยเพื่อความสมดุลสายตา
+  },
+  emptyIcon: {
+    fontSize: 64,
+    marginBottom: 10,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1e3a8a',
+    marginBottom: 6,
+  },
+  emptySubText: {
+    fontSize: 14,
+    color: '#64748b',
+    textAlign: 'center',
   },
   productCard: {
     backgroundColor: '#ffffff', // การ์ดสินค้าสีขาวสะอาดตาตัดกับพื้นหลังฟ้าอ่อน
